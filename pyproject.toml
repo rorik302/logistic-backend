@@ -13,3 +13,17 @@ license = {text = "MIT"}
 
 [tool.pdm]
 package-type = "application"
+
+[tool.pdm.dev-dependencies]
+lint = [
+    "pre-commit>=3.6.0",
+    "ruff>=0.2.1",
+    "black>=24.1.1",
+]
+
+[tool.ruff]
+select = ["E", "W", "F", "C", "B", "I"]
+line-length = 120
+
+[tool.black]
+line-length = 120
