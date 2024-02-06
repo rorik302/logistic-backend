@@ -5,7 +5,7 @@
 groups = ["default", "lint"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:24ad4fb783a5bf57e3c89b1d9873cf137ad2f7f4065f100ac67586fc3a5b150b"
+content_hash = "sha256:dcd8a08472f3e58fa0df36b5e613f733736ecba7197ec70208ec2339f5279f6f"
 
 [[package]]
 name = "black"
@@ -157,6 +157,20 @@ files = [
 ]
 
 [[package]]
+name = "podman-compose"
+version = "1.0.6"
+summary = "A script to run docker-compose.yml using podman"
+groups = ["default"]
+dependencies = [
+    "python-dotenv",
+    "pyyaml",
+]
+files = [
+    {file = "podman-compose-1.0.6.tar.gz", hash = "sha256:2db235049fca50a5a4ffd511a917808c960dacb8defd5481dd8b36a77d4da2e5"},
+    {file = "podman_compose-1.0.6-py2.py3-none-any.whl", hash = "sha256:48c92e6cdac1732422c6cfa803d8a905a61be4119dc0d41f9ed42c66826e9a78"},
+]
+
+[[package]]
 name = "pre-commit"
 version = "3.6.0"
 requires_python = ">=3.9"
@@ -175,11 +189,22 @@ files = [
 ]
 
 [[package]]
+name = "python-dotenv"
+version = "1.0.1"
+requires_python = ">=3.8"
+summary = "Read key-value pairs from a .env file and set them as environment variables"
+groups = ["default"]
+files = [
+    {file = "python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca"},
+    {file = "python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a"},
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.1"
 requires_python = ">=3.6"
 summary = "YAML parser and emitter for Python"
-groups = ["lint"]
+groups = ["default", "lint"]
 files = [
     {file = "PyYAML-6.0.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:6965a7bc3cf88e5a1c3bd2e0b5c22f8d677dc88a455344035f03399034eb3007"},
     {file = "PyYAML-6.0.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:f003ed9ad21d6a4713f0a9b5a7a0a79e08dd0f221aff4525a2be4c346ee60aab"},
