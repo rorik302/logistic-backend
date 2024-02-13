@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import select, text
@@ -21,13 +23,30 @@ class DatabaseRepository(BaseRepository):
             cfg.attributes["session"] = session
             command.upgrade(cfg, "head")
 
-        config = Config(settings.alembic.ini_path)
+        config = Config(settings.alembic.INI_PATH)
         if schema_name == settings.database.SHARED_SCHEMA_NAME:
-            path = settings.alembic.shared_path
+            path = settings.alembic.SHARED_PATH
         else:
-            path = settings.alembic.tenant_path
+            path = settings.alembic.TENANT_PATH
             config.attributes["schema_name"] = schema_name
 
         config.set_main_option("script_location", path)
 
         await self.session.run_sync(run_migrate, config)
+
+    async def make_migrations(self, schema_name: str, message: str):
+        def run_make_migrations(session, cfg: Config):
+            cfg.attributes["session"] = session
+            command.revision(cfg, message, autogenerate=True)
+
+        config = Config(settings.alembic.INI_PATH)
+        if schema_name == settings.database.SHARED_SCHEMA_NAME:
+            path = settings.alembic.SHARED_PATH
+        else:
+            path = settings.alembic.TENANT_PATH
+            config.attributes["schema_name"] = schema_name
+
+        config.set_main_option("script_location", path)
+        config.cmd_opts = SimpleNamespace(cmd="revision", autogenerate=True)
+
+        await self.session.run_sync(run_make_migrations, config)

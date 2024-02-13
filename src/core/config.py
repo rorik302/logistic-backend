@@ -50,9 +50,9 @@ class BaseSettings:
 
 
 class AlembicSettings(BaseSettings):
-    ini_path: str = (PROJECT_DIR / "alembic.ini").as_posix()
-    shared_path: str = (PROJECT_DIR / "src/migrations/shared").as_posix()
-    tenant_path: str = (PROJECT_DIR / "src/migrations/tenant").as_posix()
+    INI_PATH: str = (PROJECT_DIR / "alembic.ini").as_posix()
+    SHARED_PATH: str = (PROJECT_DIR / "src/migrations/shared").as_posix()
+    TENANT_PATH: str = (PROJECT_DIR / "src/migrations/tenant").as_posix()
 
 
 class DatabaseSettings(BaseSettings):
