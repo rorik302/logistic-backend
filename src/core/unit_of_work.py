@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.repositories.auth import TenantRepository, UserRepository
 from src.repositories.database import DatabaseRepository
 
 
@@ -8,6 +9,8 @@ class UnitOfWork:
         self.session = session
 
         self.database: DatabaseRepository = DatabaseRepository(self.session)
+        self.tenant: TenantRepository = TenantRepository(self.session)
+        self.user: UserRepository = UserRepository(self.session)
 
     async def __aenter__(self):
         return self

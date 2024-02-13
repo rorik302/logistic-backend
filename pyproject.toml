@@ -7,8 +7,9 @@ authors = [
 ]
 dependencies = [
     "podman-compose>=1.0.6",
-    "litestar[sqlalchemy,standard]>=2.6.0",
+    "litestar[pydantic,sqlalchemy,standard]>=2.6.0",
     "asyncpg>=0.29.0",
+    "argon2-cffi>=23.1.0",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"
