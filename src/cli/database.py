@@ -25,3 +25,16 @@ async def make_migrations():
 
     async with async_session() as session:
         await DatabaseRepository(session).make_migrations(schema_name, message)
+
+
+@database_group.command("migrate")
+@run_async
+async def migrate():
+    """Применение миграций"""
+
+    schema_name = input("Schema name: ") or None
+    if schema_name is None:
+        raise ValueError("Нужно указать Схему")
+
+    async with async_session() as session:
+        await DatabaseRepository(session).migrate(schema_name)
