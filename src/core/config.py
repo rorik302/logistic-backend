@@ -49,6 +49,26 @@ class BaseSettings:
                 raise ValueError(errors)
 
 
+class AlembicSettings(BaseSettings):
+    ini_path: str = (PROJECT_DIR / "alembic.ini").as_posix()
+    shared_path: str = (PROJECT_DIR / "src/migrations/shared").as_posix()
+    tenant_path: str = (PROJECT_DIR / "src/migrations/tenant").as_posix()
+
+
+class DatabaseSettings(BaseSettings):
+    DB_NAME: str = getenv("DB_NAME")
+    DB_USER: str = getenv("DB_USER")
+    DB_PASSWORD: str = getenv("DB_PASSWORD")
+    DB_HOST: str = getenv("DB_HOST")
+    DB_PORT: int = int(getenv("DB_PORT"))
+
+    @property
+    def DB_URL(self):
+        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+    SHARED_SCHEMA_NAME: str = "shared"
+
+
 class EnvSettings(BaseSettings):
     MODE: Literal["DEV", "PROD"] = getenv("MODE")
     DEBUG: bool = getenv("DEBUG") or MODE != "PROD"
@@ -61,6 +81,8 @@ class SecuritySettings(BaseSettings):
 
 
 class Settings:
+    alembic: AlembicSettings = AlembicSettings()
+    database: DatabaseSettings = DatabaseSettings()
     env: EnvSettings = EnvSettings()
     security: SecuritySettings = SecuritySettings()
 
