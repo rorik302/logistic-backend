@@ -78,6 +78,13 @@ class EnvSettings(BaseSettings):
 class SecuritySettings(BaseSettings):
     SSL_KEYFILE: str = PROJECT_DIR / "certs" / "key.pem"
     SSL_CERTFILE: str = PROJECT_DIR / "certs" / "cert.pem"
+    PRIVATE_KEY: str = (PROJECT_DIR / "certs" / "private_key.pem").read_text()
+    PUBLIC_KEY: str = (PROJECT_DIR / "certs" / "public_key.pem").read_text()
+    ALGORITHM: str = "RS256"
+    ACCESS_TOKEN_LIFETIME: int = getenv("ACCESS_TOKEN_LIFETIME")
+    REFRESH_TOKEN_LIFETIME: int = getenv("REFRESH_TOKEN_LIFETIME")
+    REFRESH_COOKIE_KEY: str = "refresh"
+    COOKIE_STRING_KEY: str = "string"
 
 
 class Settings:
