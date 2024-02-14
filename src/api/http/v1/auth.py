@@ -23,14 +23,14 @@ class AuthController(BaseController):
         response.set_cookie(
             settings.security.REFRESH_COOKIE_KEY,
             refresh_token,
-            settings.security.REFRESH_TOKEN_LIFETIME,
+            settings.security.REFRESH_TOKEN_LIFETIME * 60,
             secure=True,
             httponly=True,
         )
         response.set_cookie(
             settings.security.COOKIE_STRING_KEY,
             cookie_string,
-            settings.security.ACCESS_TOKEN_LIFETIME,
+            settings.security.ACCESS_TOKEN_LIFETIME * 60,
             secure=True,
             httponly=True,
         )
@@ -44,14 +44,14 @@ class AuthController(BaseController):
         response.set_cookie(
             settings.security.REFRESH_COOKIE_KEY,
             refresh_token,
-            settings.security.REFRESH_TOKEN_LIFETIME,
+            settings.security.REFRESH_TOKEN_LIFETIME * 60,
             secure=True,
             httponly=True,
         )
         response.set_cookie(
             settings.security.COOKIE_STRING_KEY,
             cookie_string,
-            settings.security.ACCESS_TOKEN_LIFETIME,
+            settings.security.ACCESS_TOKEN_LIFETIME * 60,
             secure=True,
             httponly=True,
         )
