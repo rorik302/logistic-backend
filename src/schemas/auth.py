@@ -2,6 +2,9 @@ from typing import Literal
 from uuid import UUID
 
 import jwt
+from jwt import ExpiredSignatureError
+from litestar import status_codes
+from litestar.exceptions import HTTPException
 from pydantic import EmailStr
 
 from src.core.config import settings
@@ -28,3 +31,12 @@ class Token(BaseSchema):
 
     def encode(self):
         return jwt.encode(self.model_dump(mode="json"), settings.security.PRIVATE_KEY, settings.security.ALGORITHM)
+
+    @classmethod
+    def decode(cls, encoded_token: str):
+        try:
+            return cls(
+                **jwt.decode(encoded_token, settings.security.PUBLIC_KEY, algorithms=[settings.security.ALGORITHM])
+            )
+        except ExpiredSignatureError as exc:
+            raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED) from exc

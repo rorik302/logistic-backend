@@ -3,7 +3,7 @@ from secrets import choice
 from string import ascii_letters, digits
 
 from argon2 import PasswordHasher
-from litestar import Request
+from litestar import Request, status_codes
 from litestar.exceptions import HTTPException
 
 from src.core.config import settings
@@ -34,7 +34,7 @@ class AuthService(BaseService):
 
     async def login(self, data: UserLogin, request: Request):
         async with self.uow:
-            login_exception = HTTPException("Неверная почта или пароль")
+            login_exception = HTTPException("Неверная почта или пароль", status_code=status_codes.HTTP_401_UNAUTHORIZED)
             user = await self.uow.user.get_or_none(email=data.email)
             if not user:
                 raise login_exception
@@ -74,3 +74,53 @@ class AuthService(BaseService):
                 )
 
             return access_token, refresh_token, cookie_string
+
+    async def refresh_token(self, request: Request):
+        refresh_cookie = request.cookies.get(settings.security.REFRESH_COOKIE_KEY)
+        if not refresh_cookie:
+            raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
+
+        if await memory_db.refresh_token_blacklist.exists(refresh_cookie) > 0:
+            raise HTTPException(status_code=status_codes.HTTP_403_FORBIDDEN)
+
+        token = Token.decode(refresh_cookie)
+
+        if token.purpose != "refresh":
+            raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
+
+        user = await self.uow.user.get_or_none(id=token.user)
+        if not user:
+            raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
+        if not user.is_active:
+            raise HTTPException("Пользователь заблокирован")
+
+        cookie_string = "".join(choice(ascii_letters + digits) for _ in range(32))
+        hash_string = PasswordHasher().hash(cookie_string)
+
+        access_token = Token(
+            user=user.id,
+            tenant=user.tenant_id,
+            exp=int((datetime.now(UTC) + timedelta(minutes=settings.security.ACCESS_TOKEN_LIFETIME)).timestamp()),
+            purpose="access",
+            hash=hash_string,
+        ).encode()
+
+        refresh_token = Token(
+            user=user.id,
+            tenant=user.tenant_id,
+            exp=int((datetime.now(UTC) + timedelta(minutes=settings.security.REFRESH_TOKEN_LIFETIME)).timestamp()),
+            purpose="refresh",
+        ).encode()
+
+        auth_header = request.headers.get(settings.security.ACCESS_HEADER_KEY)
+        if auth_header:
+            auth_header_token = auth_header.split(" ")[-1]
+            await memory_db.access_token_blacklist.set(
+                auth_header_token, "", ex=timedelta(minutes=settings.security.ACCESS_TOKEN_LIFETIME)
+            )
+
+        await memory_db.refresh_token_blacklist.set(
+            refresh_cookie, "", ex=timedelta(minutes=settings.security.REFRESH_TOKEN_LIFETIME)
+        )
+
+        return access_token, refresh_token, cookie_string
