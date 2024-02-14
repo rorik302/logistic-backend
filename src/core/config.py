@@ -68,6 +68,9 @@ class DatabaseSettings(BaseSettings):
 
     SHARED_SCHEMA_NAME: str = "shared"
 
+    MEMORY_DB_HOST: str = getenv("MEMORY_DB_HOST")
+    MEMORY_DB_PORT: int = int(getenv("MEMORY_DB_PORT"))
+
 
 class EnvSettings(BaseSettings):
     MODE: Literal["DEV", "PROD"] = getenv("MODE")
@@ -83,6 +86,7 @@ class SecuritySettings(BaseSettings):
     ALGORITHM: str = "RS256"
     ACCESS_TOKEN_LIFETIME: int = getenv("ACCESS_TOKEN_LIFETIME")
     REFRESH_TOKEN_LIFETIME: int = getenv("REFRESH_TOKEN_LIFETIME")
+    ACCESS_HEADER_KEY: str = "Authorization"
     REFRESH_COOKIE_KEY: str = "refresh"
     COOKIE_STRING_KEY: str = "string"
 

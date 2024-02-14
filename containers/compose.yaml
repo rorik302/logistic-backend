@@ -17,5 +17,16 @@ services:
       timeout: 5s
       retries: 5
 
+  memory_db:
+    image: "docker.dragonflydb.io/dragonflydb/dragonfly"
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"
+    network_mode: "host"
+    volumes:
+      - dragonflydata:/dragonflydata
+
 volumes:
   postgres:
+  dragonflydata:

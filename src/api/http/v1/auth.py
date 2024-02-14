@@ -1,4 +1,4 @@
-from litestar import Response, post, status_codes
+from litestar import Request, Response, post, status_codes
 from litestar.di import Provide
 
 from src.api.base import BaseController
@@ -15,8 +15,8 @@ class AuthController(BaseController):
     dependencies = {"session": Provide(provide_session), "uow": Provide(provide_unit_of_work)}
 
     @post("/login")
-    async def login(self, uow: UnitOfWork, data: UserLogin) -> Response[None]:
-        access_token, refresh_token, cookie_string = await AuthService(uow).login(data)
+    async def login(self, uow: UnitOfWork, data: UserLogin, request: Request) -> Response[None]:
+        access_token, refresh_token, cookie_string = await AuthService(uow).login(data, request)
         response = Response(None, status_code=status_codes.HTTP_200_OK)
         response.headers["Authorization"] = f"Bearer {access_token}"
         response.set_cookie(

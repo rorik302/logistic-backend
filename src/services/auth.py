@@ -3,9 +3,11 @@ from secrets import choice
 from string import ascii_letters, digits
 
 from argon2 import PasswordHasher
+from litestar import Request
 from litestar.exceptions import HTTPException
 
 from src.core.config import settings
+from src.core.database import memory_db
 from src.models import Tenant, User
 from src.schemas.auth import TenantCreate, Token, UserLogin
 from src.services.base import BaseService
@@ -30,7 +32,7 @@ class AuthService(BaseService):
             await self.uow.database.create_schema(tenant.schema_name)
             await self.uow.database.migrate(tenant.schema_name)
 
-    async def login(self, data: UserLogin):
+    async def login(self, data: UserLogin, request: Request):
         async with self.uow:
             login_exception = HTTPException("Неверная почта или пароль")
             user = await self.uow.user.get_or_none(email=data.email)
@@ -58,5 +60,17 @@ class AuthService(BaseService):
                 exp=int((datetime.now(UTC) + timedelta(minutes=settings.security.REFRESH_TOKEN_LIFETIME)).timestamp()),
                 purpose="refresh",
             ).encode()
+
+            auth_header = request.headers.get(settings.security.ACCESS_HEADER_KEY)
+            if auth_header:
+                auth_header_token = auth_header.split(" ")[-1]
+                await memory_db.access_token_blacklist.set(
+                    auth_header_token, "", ex=timedelta(minutes=settings.security.ACCESS_TOKEN_LIFETIME)
+                )
+            refresh_cookie = request.cookies.get(settings.security.REFRESH_COOKIE_KEY)
+            if refresh_cookie:
+                await memory_db.refresh_token_blacklist.set(
+                    refresh_cookie, "", ex=timedelta(minutes=settings.security.REFRESH_TOKEN_LIFETIME)
+                )
 
             return access_token, refresh_token, cookie_string
