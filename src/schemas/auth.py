@@ -2,12 +2,15 @@ from typing import Literal
 from uuid import UUID
 
 import jwt
+from advanced_alchemy.extensions.litestar import SQLAlchemyDTO
 from jwt import ExpiredSignatureError
 from litestar import status_codes
+from litestar.dto import DTOConfig
 from litestar.exceptions import HTTPException
 from pydantic import EmailStr
 
 from src.core.config import settings
+from src.models import User
 from src.schemas.base import BaseSchema
 
 
@@ -20,6 +23,10 @@ class TenantCreate(BaseSchema):
 class UserLogin(BaseSchema):
     email: EmailStr
     password: str
+
+
+class UserReturnDTO(SQLAlchemyDTO[User]):
+    config = DTOConfig(exclude={"password", "tenant"})
 
 
 class Token(BaseSchema):

@@ -1,11 +1,12 @@
-from litestar import Request, Response, post, status_codes
+from litestar import Request, Response, get, post, status_codes
 from litestar.di import Provide
 
 from src.api.base import BaseController
 from src.api.dependencies import provide_session, provide_unit_of_work
 from src.core.config import settings
 from src.core.unit_of_work import UnitOfWork
-from src.schemas.auth import UserLogin
+from src.models import User
+from src.schemas.auth import UserLogin, UserReturnDTO
 from src.services.auth import AuthService
 
 
@@ -55,3 +56,7 @@ class AuthController(BaseController):
             httponly=True,
         )
         return response
+
+    @get("/me", return_dto=UserReturnDTO)
+    async def current_user(self, request: Request) -> User:
+        return request.user
