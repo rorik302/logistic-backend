@@ -6,9 +6,10 @@ from litestar.middleware import AbstractAuthenticationMiddleware, Authentication
 from litestar.types import ASGIApp
 
 from src.core.config import settings
-from src.core.database import async_session
+from src.core.database import async_session, memory_db
 from src.core.unit_of_work import UnitOfWork
 from src.schemas.auth import Token
+from src.services.auth import AuthService
 
 
 class JWTAuthMiddleware(AbstractAuthenticationMiddleware):
@@ -27,16 +28,14 @@ class JWTAuthMiddleware(AbstractAuthenticationMiddleware):
 
         if token.purpose != "access":
             raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
+        if await memory_db.access_token_blacklist.exists(encoded_token) > 0:
+            raise HTTPException(status_code=status_codes.HTTP_403_FORBIDDEN)
 
         cookie_string = connection.cookies.get(settings.security.COOKIE_STRING_KEY)
         if not PasswordHasher().verify(token.hash, cookie_string):
             raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
 
         async with async_session() as session, UnitOfWork(session) as uow:
-            user = await uow.user.get_or_none(id=token.user)
-            if not user:
-                raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
-            if not user.is_active:
-                raise HTTPException("Пользователь заблокирован")
+            user = await AuthService(uow).authenticate(token.user)
 
         return AuthenticationResult(user, encoded_token)

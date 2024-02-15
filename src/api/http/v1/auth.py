@@ -15,9 +15,8 @@ class AuthController(BaseController):
     tags = ["Auth"]
     dependencies = {"session": Provide(provide_session), "uow": Provide(provide_unit_of_work)}
 
-    @post("/login")
-    async def login(self, uow: UnitOfWork, data: UserLogin, request: Request) -> Response[None]:
-        access_token, refresh_token, cookie_string = await AuthService(uow).login(data, request)
+    @staticmethod
+    async def _prepare_response(access_token: str, refresh_token: str, cookie_string: str) -> Response[None]:
         response = Response(None, status_code=status_codes.HTTP_200_OK)
         response.headers["Authorization"] = f"Bearer {access_token}"
         response.set_cookie(
@@ -36,26 +35,15 @@ class AuthController(BaseController):
         )
         return response
 
+    @post("/login")
+    async def login(self, uow: UnitOfWork, data: UserLogin, request: Request) -> Response[None]:
+        access_token, refresh_token, cookie_string = await AuthService(uow).login(data, request)
+        return await self._prepare_response(access_token, refresh_token, cookie_string)
+
     @post("/refresh")
     async def refresh(self, uow: UnitOfWork, request: Request) -> Response[None]:
         access_token, refresh_token, cookie_string = await AuthService(uow).refresh_token(request)
-        response = Response(None, status_code=status_codes.HTTP_200_OK)
-        response.headers["Authorization"] = f"Bearer {access_token}"
-        response.set_cookie(
-            settings.security.REFRESH_COOKIE_KEY,
-            refresh_token,
-            settings.security.REFRESH_TOKEN_LIFETIME * 60,
-            secure=True,
-            httponly=True,
-        )
-        response.set_cookie(
-            settings.security.COOKIE_STRING_KEY,
-            cookie_string,
-            settings.security.ACCESS_TOKEN_LIFETIME * 60,
-            secure=True,
-            httponly=True,
-        )
-        return response
+        return await self._prepare_response(access_token, refresh_token, cookie_string)
 
     @get("/me", return_dto=UserReturnDTO)
     async def current_user(self, request: Request) -> User:
