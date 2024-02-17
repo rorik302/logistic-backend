@@ -35,6 +35,11 @@ class BaseSettings:
             if get_origin(var_type) == Literal:
                 if field_value not in get_args(var_type):
                     errors[field] = f"Значение {field} должно быть одним из {get_args(var_type)}"
+            # Валидация списка
+            elif get_origin(var_type) == list:
+                field_value = field_value.replace("[", "").replace("]", "").split(",")
+                if not isinstance(field_value, list):
+                    errors[field] = f"Значение {field} должно иметь тип {list}, а имеет тип {type(field_value)}"
             # Валидация остальных типов
             else:
                 if var_type == bool:
@@ -89,6 +94,7 @@ class SecuritySettings(BaseSettings):
     ACCESS_HEADER_KEY: str = "Authorization"
     REFRESH_COOKIE_KEY: str = "refresh"
     COOKIE_STRING_KEY: str = "string"
+    CORS_ALLOW_ORIGINS: list[str] = getenv("CORS_ALLOW_ORIGINS")
 
 
 class Settings:
