@@ -82,7 +82,7 @@ class AuthService(BaseService):
             user = await self.uow.user.get_or_none(id=user_id)
         elif credentials:
             user = await self.uow.user.get_or_none(email=credentials.email)
-            if not PasswordHasher().verify(user.password, credentials.password):
+            if not user or not PasswordHasher().verify(user.password, credentials.password):
                 raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
         else:
             raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
