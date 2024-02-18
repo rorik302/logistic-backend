@@ -5,6 +5,7 @@ from typing import Literal
 from uuid import UUID
 
 from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from litestar import Request, status_codes
 from litestar.exceptions import HTTPException
 
@@ -82,8 +83,12 @@ class AuthService(BaseService):
             user = await self.uow.user.get_or_none(id=user_id)
         elif credentials:
             user = await self.uow.user.get_or_none(email=credentials.email)
-            if not user or not PasswordHasher().verify(user.password, credentials.password):
+            if not user:
                 raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
+            try:
+                PasswordHasher().verify(user.password, credentials.password)
+            except VerifyMismatchError as exc:
+                raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED) from exc
         else:
             raise HTTPException(status_code=status_codes.HTTP_401_UNAUTHORIZED)
 
