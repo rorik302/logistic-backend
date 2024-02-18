@@ -40,6 +40,7 @@ class BaseSettings:
                 field_value = field_value.replace("[", "").replace("]", "").split(",")
                 if not isinstance(field_value, list):
                     errors[field] = f"Значение {field} должно иметь тип {list}, а имеет тип {type(field_value)}"
+                self.__setattr__(field, field_value)
             # Валидация остальных типов
             else:
                 if var_type == bool:
@@ -95,6 +96,7 @@ class SecuritySettings(BaseSettings):
     REFRESH_COOKIE_KEY: str = "refresh"
     COOKIE_STRING_KEY: str = "string"
     CORS_ALLOW_ORIGINS: list[str] = getenv("CORS_ALLOW_ORIGINS")
+    CORS_ALLOW_ORIGINS_REGEX: str = getenv("CORS_ALLOW_ORIGINS_REGEX")
 
 
 class Settings:

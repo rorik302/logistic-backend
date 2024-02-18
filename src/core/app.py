@@ -7,6 +7,7 @@ from src.utils.database import init_shared_schema
 
 cors_config = CORSConfig(
     allow_origins=settings.security.CORS_ALLOW_ORIGINS,
+    allow_origin_regex=settings.security.CORS_ALLOW_ORIGINS_REGEX,
     allow_credentials=True,
     expose_headers=["Authorization"],
 )
